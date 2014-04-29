@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Configures the Camel Context -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:amq="http://activemq.apache.org/schema/core"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+
+	<!-- This creates an embedded ActiveMQ Broker 
+	<broker xmlns="http://activemq.apache.org/schema/core" useJmx="true"
+		persistent="false">
+		<transportConnectors>
+			<transportConnector uri="tcp://localhost:61616" />
+		</transportConnectors>
+	</broker>-->
+
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="tcp://localhost:61616" />
+	</bean>
+
+	<!-- <bean id="sql" class="org.apache.camel.component.sql.SqlComponent"> 
+		<property name="dataSource" ref="oracleDS" /> </bean> <bean id="oracleDS" 
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource"> <property 
+		name="driverClassName" value="oracle.jdbc.OracleDriver" /> <property name="url" 
+		value="jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11" /> 
+		<property name="username" value="DBALLO01" /> <property name="password" value="DBALLO01" 
+		/> </bean> -->
+
+	<camelContext xmlns="http://camel.apache.org/schema/spring">
+		<route>
+			<from uri="activemq:myqueue?username=admin&amp;password=admin" />
+			<log message="Received message: ${body}" />
+			<!-- to uri="sql:select * from orders"/> <log message="Result: ${body}"/ -->
+		</route>
+	</camelContext>
+
+</beans>
