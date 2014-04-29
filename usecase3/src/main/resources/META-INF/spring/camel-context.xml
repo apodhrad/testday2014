@@ -9,32 +9,34 @@
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
        http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
 
-	<!-- This creates an embedded ActiveMQ Broker 
-	<broker xmlns="http://activemq.apache.org/schema/core" useJmx="true"
-		persistent="false">
-		<transportConnectors>
-			<transportConnector uri="tcp://localhost:61616" />
-		</transportConnectors>
-	</broker>-->
+	<!-- This creates an embedded ActiveMQ Broker <broker xmlns="http://activemq.apache.org/schema/core" 
+		useJmx="true" persistent="false"> <transportConnectors> <transportConnector 
+		uri="tcp://localhost:61616" /> </transportConnectors> </broker> -->
 
 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
 		<property name="brokerURL" value="tcp://localhost:61616" />
 	</bean>
 
-	<!-- <bean id="sql" class="org.apache.camel.component.sql.SqlComponent"> 
-		<property name="dataSource" ref="oracleDS" /> </bean> <bean id="oracleDS" 
-		class="org.springframework.jdbc.datasource.DriverManagerDataSource"> <property 
-		name="driverClassName" value="oracle.jdbc.OracleDriver" /> <property name="url" 
-		value="jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11" /> 
-		<property name="username" value="DBALLO01" /> <property name="password" value="DBALLO01" 
-		/> </bean> -->
+	<bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
+		<property name="dataSource" ref="oracleDS" />
+	</bean>
+	<bean id="oracleDS"
+		class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+		<property name="driverClass" value="oracle.jdbc.OracleDriver" />
+		<property name="url"
+			value="jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11" />
+		<property name="username" value="DBALLO01" />
+		<property name="password" value="DBALLO01" />
+	</bean>
 
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
-		<route>
-			<from uri="activemq:myqueue?username=admin&amp;password=admin" />
-			<log message="Received message: ${body}" />
-			<!-- to uri="sql:select * from orders"/> <log message="Result: ${body}"/ -->
-		</route>
-	</camelContext>
+    <route>
+        <description>to uri="sql:select * from orders"/&gt; &lt;log message="Result: ${body}"/</description>
+        <from uri="activemq:myqueue?username=admin&amp;password=admin"/>
+        <log message="Received message: ${body} \n id: ${body[id]}"/>
+        <to uri="sql:select * from orders"/>
+        <log message="SQL Result: ${body}"/>
+    </route>
+</camelContext>
 
 </beans>

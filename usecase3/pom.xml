@@ -212,6 +212,7 @@
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Bundle-Activator>org.apodhrad.testday.Activator</Bundle-Activator>
 						<DynamicImport-Package>*</DynamicImport-Package>
+						<Import-Package>*</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
