@@ -12,14 +12,47 @@
 	<!-- This creates an embedded ActiveMQ Broker <broker xmlns="http://activemq.apache.org/schema/core" 
 		useJmx="true" persistent="false"> <transportConnectors> <transportConnector 
 		uri="tcp://localhost:61616" /> </transportConnectors> </broker> -->
-
-	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+	<!-- <bean id="jtaTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager"> 
+		<property name="transactionManager" ref="transactionManager"/> </bean> -->
+		
+	<bean id="jmsXaConnectionFactory" class="org.apache.activemq.ActiveMQXAConnectionFactory">
 		<property name="brokerURL" value="tcp://localhost:61616" />
 	</bean>
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="tcp://localhost:61616" />
+		<property name="userName" value="admin" />
+		<property name="password" value="admin" />
+	</bean>
+	
+	<!-- 
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="jmsConfig" />
+		<property name="userName" value="admin" />
+		<property name="password" value="admin" />
+	</bean>
+
+	 -->
+	<bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="jmsConnectionFactory" />
+		<property name="transactionManager" ref="jmsTransactionManager" />
+		<!-- property name="transacted" value="true" /-->
+	</bean>
+
+	<bean id="jmsTransactionManager"
+		class="org.springframework.jms.connection.JmsTransactionManager">
+		<property name="connectionFactory" ref="jmsConnectionFactory" />
+	</bean>
+
+	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="tcp://localhost:61616" />
+	</bean>
+
 
 	<bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
 		<property name="dataSource" ref="oracleDS" />
 	</bean>
+
+
 	<bean id="oracleDS"
 		class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
 		<property name="driverClass" value="oracle.jdbc.OracleDriver" />
@@ -29,13 +62,19 @@
 		<property name="password" value="DBALLO01" />
 	</bean>
 
+	<bean id="myBean" class="org.apodhrad.testday.MyBean" />
+
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
     <route>
-        <description>to uri="sql:select * from orders"/&gt; &lt;log message="Result: ${body}"/</description>
-        <from uri="activemq:myqueue?username=admin&amp;password=admin"/>
-        <log message="Received message: ${body} \n id: ${body[id]}"/>
-        <to uri="sql:select * from orders"/>
-        <log message="SQL Result: ${body}"/>
+        <from uri="activemq:myqueue"/>
+        <log message="[MyQueue] Received message: ${body}"/>
+        <to uri="sql:insert into orders values ('ORDERXXX', '100')"/>
+        <to uri="activemq:myqueue2"/>
+        <bean ref="myBean" method="foo"/>
+    </route>
+    <route>
+        <from uri="activemq:myqueue2?username=admin&amp;password=admin"/>
+        <log message="[MyQueue2] Body: ${body}"/>
     </route>
 </camelContext>
 
