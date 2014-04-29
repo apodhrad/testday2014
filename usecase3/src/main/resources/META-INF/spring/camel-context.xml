@@ -19,9 +19,10 @@
 		<property name="brokerURL" value="tcp://localhost:61616" />
 	</bean>
 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-		<property name="brokerURL" value="tcp://localhost:61616" />
+		<!-- property name="brokerURL" value="tcp://localhost:61616" />
 		<property name="userName" value="admin" />
-		<property name="password" value="admin" />
+		<property name="password" value="admin" /-->
+		<property name="configuration" ref="jmsConfig" />
 	</bean>
 	
 	<!-- 
@@ -30,12 +31,12 @@
 		<property name="userName" value="admin" />
 		<property name="password" value="admin" />
 	</bean>
-
 	 -->
+	 
 	<bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
 		<property name="connectionFactory" ref="jmsConnectionFactory" />
 		<property name="transactionManager" ref="jmsTransactionManager" />
-		<!-- property name="transacted" value="true" /-->
+		<property name="transacted" value="false" />
 	</bean>
 
 	<bean id="jmsTransactionManager"
@@ -45,6 +46,8 @@
 
 	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
 		<property name="brokerURL" value="tcp://localhost:61616" />
+		<property name="userName" value="admin" />
+		<property name="password" value="admin" />
 	</bean>
 
 
@@ -63,10 +66,12 @@
 	</bean>
 
 	<bean id="myBean" class="org.apodhrad.testday.MyBean" />
+	<bean id="myBean2" class="org.apodhrad.testday.MyBean2" />
 
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
     <route>
         <from uri="activemq:myqueue"/>
+        <!-- transacted/-->
         <log message="[MyQueue] Received message: ${body}"/>
         <to uri="sql:insert into orders values ('ORDERXXX', '100')"/>
         <to uri="activemq:myqueue2"/>
@@ -75,6 +80,7 @@
     <route>
         <from uri="activemq:myqueue2?username=admin&amp;password=admin"/>
         <log message="[MyQueue2] Body: ${body}"/>
+        <bean ref="myBean2" method="foo2"/>
     </route>
 </camelContext>
 
