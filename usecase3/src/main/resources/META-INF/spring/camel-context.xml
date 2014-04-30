@@ -3,58 +3,61 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
-	xmlns:amq="http://activemq.apache.org/schema/core"
+	xmlns:amq="http://activemq.apache.org/schema/core" xmlns:osgi="http://www.springframework.org/schema/osgi"
 	xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
-       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+       http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+       http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd ">
 
 	<!-- This creates an embedded ActiveMQ Broker <broker xmlns="http://activemq.apache.org/schema/core" 
 		useJmx="true" persistent="false"> <transportConnectors> <transportConnector 
 		uri="tcp://localhost:61616" /> </transportConnectors> </broker> -->
 	<!-- <bean id="jtaTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager"> 
 		<property name="transactionManager" ref="transactionManager"/> </bean> -->
-		
+
+	<!-- OSGi TM Service -->
+	<!-- access through Spring's PlatformTransactionManager -->
+	<osgi:reference id="osgiPlatformTransactionManager"
+		interface="org.springframework.transaction.PlatformTransactionManager" />
+	<!-- access through JTA TransactionManager -->
+	<osgi:reference id="osgiJtaTransactionManager"
+		interface="javax.transaction.TransactionManager" />
+
+	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="jmsTxConfig" />
+	</bean>
+
+	<bean id="jmsTxConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="jmsXaPoolConnectionFactory" />
+		<property name="transactionManager" ref="osgiPlatformTransactionManager" />
+		<property name="transacted" value="true" />
+	</bean>
+
+	<!-- connection factory wrapper to support auto-enlisting of XA resource -->
+	<bean id="jmsXaPoolConnectionFactory" class="org.apache.activemq.pool.XaPooledConnectionFactory">
+		<property name="maxConnections" value="1" />
+		<property name="connectionFactory" ref="jmsXaConnectionFactory" />
+		<property name="transactionManager" ref="osgiJtaTransactionManager" />
+	</bean>
+
 	<bean id="jmsXaConnectionFactory" class="org.apache.activemq.ActiveMQXAConnectionFactory">
 		<property name="brokerURL" value="tcp://localhost:61616" />
-	</bean>
-	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-		<!-- property name="brokerURL" value="tcp://localhost:61616" />
-		<property name="userName" value="admin" />
-		<property name="password" value="admin" /-->
-		<property name="configuration" ref="jmsConfig" />
-	</bean>
-	
-	<!-- 
-	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-		<property name="configuration" ref="jmsConfig" />
-		<property name="userName" value="admin" />
-		<property name="password" value="admin" />
-	</bean>
-	 -->
-	 
-	<bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
-		<property name="connectionFactory" ref="jmsConnectionFactory" />
-		<property name="transactionManager" ref="jmsTransactionManager" />
-		<property name="transacted" value="false" />
-	</bean>
-
-	<bean id="jmsTransactionManager"
-		class="org.springframework.jms.connection.JmsTransactionManager">
-		<property name="connectionFactory" ref="jmsConnectionFactory" />
-	</bean>
-
-	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-		<property name="brokerURL" value="tcp://localhost:61616" />
 		<property name="userName" value="admin" />
 		<property name="password" value="admin" />
 	</bean>
 
+	<!-- ActiveMQ XA Resource Manager -->
+	<bean id="resourceManager" class="org.apache.activemq.pool.ActiveMQResourceManager"
+		init-method="recoverResource">
+		<property name="transactionManager" ref="osgiJtaTransactionManager" />
+		<property name="connectionFactory" ref="jmsXaPoolConnectionFactory" />
+		<property name="resourceName" value="activemq.default" />
+	</bean>
 
 	<bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
 		<property name="dataSource" ref="oracleDS" />
 	</bean>
-
 
 	<bean id="oracleDS"
 		class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
@@ -69,19 +72,19 @@
 	<bean id="myBean2" class="org.apodhrad.testday.MyBean2" />
 
 	<camelContext xmlns="http://camel.apache.org/schema/spring">
-    <route>
-        <from uri="activemq:myqueue"/>
-        <!-- transacted/-->
-        <log message="[MyQueue] Received message: ${body}"/>
-        <to uri="sql:insert into orders values ('ORDERXXX', '100')"/>
-        <to uri="activemq:myqueue2"/>
-        <bean ref="myBean" method="foo"/>
-    </route>
-    <route>
-        <from uri="activemq:myqueue2?username=admin&amp;password=admin"/>
-        <log message="[MyQueue2] Body: ${body}"/>
-        <bean ref="myBean2" method="foo2"/>
-    </route>
-</camelContext>
+		<route>
+			<from uri="activemq:myqueue" />
+			<transacted />
+			<log message="[MyQueue] Received message: ${body}" />
+			<to uri="sql:insert into orders values ('ORDERXXX', '100')" />
+			<to uri="activemq:myqueue2" />
+			<bean ref="myBean" method="foo" />
+		</route>
+		<route>
+			<from uri="activemq:myqueue2?username=admin&amp;password=admin" />
+			<log message="[MyQueue2] Body: ${body}" />
+			<bean ref="myBean2" method="foo2" />
+		</route>
+	</camelContext>
 
 </beans>
