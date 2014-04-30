@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:osgi="http://www.springframework.org/schema/osgi"
+	xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+   http://www.springframework.org/schema/osgi  
+       http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+	<bean id="oracleXADataSource" class="oracle.jdbc.xa.client.OracleXADataSource">
+		<property name="URL"
+			value="jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11" />
+		<property name="user" value="DBALLO01" />
+		<property name="password" value="DBALLO01" />
+	</bean>
+
+	<osgi:service ref="oracleXADataSource" interface="javax.sql.XADataSource">
+		<osgi:service-properties>
+			<entry key="osgi.jndi.service.name" value="jdbc/oracleXADB" />
+			<entry key="datasource.name" value="oracleXADB" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<bean id="oracleDataSource" class="oracle.jdbc.pool.OracleDataSource">
+		<property name="URL"
+			value="jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11" />
+		<property name="user" value="DBALLO01" />
+		<property name="password" value="DBALLO01" />
+	</bean>
+
+	<osgi:service ref="oracleDataSource" interface="javax.sql.DataSource">
+		<osgi:service-properties>
+			<entry key="osgi.jndi.service.name" value="jdbc/oracleDB" />
+			<entry key="datasource.name" value="oracleDB" />
+		</osgi:service-properties>
+	</osgi:service>
+
+</beans>

@@ -55,8 +55,19 @@
 		<property name="resourceName" value="activemq.default" />
 	</bean>
 
+	<!-- Import Oracle XA data source as an OSGi service -->
+	<osgi:reference id="oracleXADataSource" interface="javax.sql.DataSource"
+		filter="(datasource.name=oracleXADB)" />
+
+	<bean id="localOracleXADataSource" class="oracle.jdbc.xa.client.OracleXADataSource">
+		<property name="URL"
+			value="jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11" />
+		<property name="user" value="DBALLO01" />
+		<property name="password" value="DBALLO01" />
+	</bean>
+
 	<bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
-		<property name="dataSource" ref="oracleDS" />
+		<property name="dataSource" ref="oracleXADataSource" />
 	</bean>
 
 	<bean id="oracleDS"
@@ -76,7 +87,8 @@
 			<from uri="activemq:myqueue" />
 			<transacted />
 			<log message="[MyQueue] Received message: ${body}" />
-			<to uri="sql:insert into orders values ('ORDERXXX', '100')" />
+			<to
+				uri="sql:insert into orders (ORDERID, SUBTOTAL) values ('ORDER007', '200')" />
 			<to uri="activemq:myqueue2" />
 			<bean ref="myBean" method="foo" />
 		</route>
