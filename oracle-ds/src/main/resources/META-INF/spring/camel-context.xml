@@ -18,6 +18,9 @@
 		<osgi:service-properties>
 			<entry key="osgi.jndi.service.name" value="jdbc/oracleXADB" />
 			<entry key="datasource.name" value="oracleXADB" />
+			<!-- see https://issues.apache.org/jira/browse/ARIES-1171 -->
+			<entry key="aries.xa.username" value="DBALLO01"/>
+			<entry key="aries.xa.password" value="DBALLO01"/>
 		</osgi:service-properties>
 	</osgi:service>
 
