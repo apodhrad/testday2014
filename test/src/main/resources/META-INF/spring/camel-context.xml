@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/osgi http://www.springframework.org/schema/osgi/spring-osgi.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <bean id="helloBean" class="com.mycompany.camel.spring.dm.HelloBean">
+      <property name="say" value="Hey from Camel"/>
+  </bean>
+  
+  	<!-- Import Oracle XA data source as an OSGi service -->
+	<osgi:reference id="oracleXADataSourceRef" interface="javax.sql.DataSource"
+		filter="(datasource.name=oracleXADB)" />
+
+	<bean id="sql" class="org.apache.camel.component.sql.SqlComponent">
+		<property name="dataSource" ref="oracleXADataSourceRef" />
+	</bean>
+
+  <camelContext xmlns="http://camel.apache.org/schema/spring">
+  <route>
+    <from uri="timer:foo?period=5000"/>
+    <setBody>
+      <method ref="helloBean" method="hello"></method>
+    </setBody>
+    <log message="The message contains ${body}"/>
+    <to uri="sql:select * from orders"/>
+    <log message="The message contains ${body}"/>
+  </route>
+</camelContext>
+
+</beans>
