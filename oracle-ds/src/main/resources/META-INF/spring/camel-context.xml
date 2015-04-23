@@ -9,9 +9,9 @@
 
 	<bean id="oracleXADataSource" class="oracle.jdbc.xa.client.OracleXADataSource">
 		<property name="URL"
-			value="jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11" />
-		<property name="user" value="DBALLO01" />
-		<property name="password" value="DBALLO01" />
+			value="jdbc:oracle:thin:@db03.mw.lab.eng.bos.redhat.com:1521:qaora11" />
+		<property name="user" value="DBALLO07" />
+		<property name="password" value="DBALLO07" />
 	</bean>
 
 	<osgi:service ref="oracleXADataSource" interface="javax.sql.XADataSource">
@@ -19,16 +19,16 @@
 			<entry key="osgi.jndi.service.name" value="jdbc/oracleXADB" />
 			<entry key="datasource.name" value="oracleXADB" />
 			<!-- see https://issues.apache.org/jira/browse/ARIES-1171 -->
-			<entry key="aries.xa.username" value="DBALLO01"/>
-			<entry key="aries.xa.password" value="DBALLO01"/>
+			<entry key="aries.xa.username" value="DBALLO07"/>
+			<entry key="aries.xa.password" value="DBALLO07"/>
 		</osgi:service-properties>
 	</osgi:service>
 
 	<bean id="oracleDataSource" class="oracle.jdbc.pool.OracleDataSource">
 		<property name="URL"
-			value="jdbc:oracle:thin:@db04.mw.lab.eng.bos.redhat.com:1521:qaora11" />
-		<property name="user" value="DBALLO01" />
-		<property name="password" value="DBALLO01" />
+			value="jdbc:oracle:thin:@db03.mw.lab.eng.bos.redhat.com:1521:qaora11" />
+		<property name="user" value="DBALLO07" />
+		<property name="password" value="DBALLO07" />
 	</bean>
 
 	<osgi:service ref="oracleDataSource" interface="javax.sql.DataSource">
