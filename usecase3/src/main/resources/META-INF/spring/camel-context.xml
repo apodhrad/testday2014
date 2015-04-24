@@ -35,7 +35,8 @@
 	</bean>
 
 	<!-- connection factory wrapper to support auto-enlisting of XA resource -->
-	<bean id="jmsXaPoolConnectionFactory" class="org.apache.activemq.pool.XaPooledConnectionFactory">
+	<bean id="jmsXaPoolConnectionFactory" class="org.apache.activemq.pool.JcaPooledConnectionFactory">
+		<property name="name" value="activemq.default" />
 		<property name="maxConnections" value="1" />
 		<property name="connectionFactory" ref="jmsXaConnectionFactory" />
 		<property name="transactionManager" ref="osgiJtaTransactionManager" />
