@@ -13,8 +13,7 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
-	<name>usecase3 Bundle</name>
-	<description>usecase3 OSGi bundle project.</description>
+	<name>Use Case 3: JMS+DB XA</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
